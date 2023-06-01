@@ -1,0 +1,1 @@
+// The base window data will go here, along with a means to load the data or provide a default.
