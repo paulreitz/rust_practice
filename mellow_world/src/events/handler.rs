@@ -1,5 +1,9 @@
+use std::fs;
+
 use directories::ProjectDirs;
 use druid::{Widget, Size, EventCtx, Event, Env, LifeCycleCtx, LifeCycle, UpdateCtx, LayoutCtx, BoxConstraints, PaintCtx, Point};
+
+use crate::data::{APP_DOMAIN, AUTHOR, APP_NAME, SETTINGS_FILE, window_data::WindowData};
 
 pub struct WindowCloseHandler;
 
@@ -10,10 +14,12 @@ impl Widget<u32> for WindowCloseHandler {
                 let win = ctx.window();
                 let Point{x: x_pos, y: y_pos} = win.get_position();
                 let Size{width, height} = win.get_size();
-                println!("WindowClosedRequested: x_pos: {}, y_pos: {}, width: {}, height: {}", x_pos, y_pos, width, height);
-                if let Some(project_dir) = ProjectDirs::from("io.paulreitz", "paulreitz", "mellow_world") {
-                    println!("ProjectDirs: {:?}", project_dir);
-                    // Save current window position and size to app data file.
+                let window_data = WindowData::new_from(x_pos, y_pos, width, height);
+                if let Some(project_dir) = ProjectDirs::from(APP_DOMAIN, AUTHOR, APP_NAME) {
+                    let config_string = serde_json::to_string(&window_data).unwrap();
+                    let config_path = project_dir.data_dir().join(SETTINGS_FILE);
+                    fs::create_dir_all(project_dir.data_dir()).expect("Unable to create settings directory");
+                    fs::write(config_path, config_string).expect("Unable to write settings file");
                 }
             },
             _ => (),
